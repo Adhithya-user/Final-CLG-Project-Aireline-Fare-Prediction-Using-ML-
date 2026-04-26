@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>✈️ Airline Fare Predictor</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1A237E;--blue:#1565C0;--sky:#1976D2;--ltblue:#E3F2FD;
+  --green:#1B5E20;--ltgreen:#E8F5E9;--amber:#FF8F00;--gold:#FFC107;
+  --orange:#E65100;--purple:#4A148C;--teal:#00695C;
+  --white:#FFFFFF;--offwht:#F5F7FA;--border:#DCE3EE;
+  --text:#1A2340;--muted:#607080;--lgray:#ECF0F5;
+  --r:10px;--sh:0 3px 16px rgba(0,0,0,.09)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--offwht);color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#0D47A1,#1565C0);color:#fff;padding:22px 20px 18px;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23ffffff18'/%3E%3C/svg%3E")}
+header h1{font-size:1.85rem;font-weight:800;letter-spacing:-.4px;position:relative}
+header p{margin-top:5px;opacity:.82;font-size:.92rem;position:relative}
+.badges{display:flex;justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap;position:relative}
+.badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:4px 14px;font-size:.76rem;font-weight:700;cursor:default}
+.badge-green{background:rgba(76,175,80,.3);border-color:rgba(76,175,80,.5)}
+.badge-amber{background:rgba(255,193,7,.3);border-color:rgba(255,193,7,.5)}
+.badge-sky{background:rgba(33,150,243,.3);border-color:rgba(33,150,243,.5)}
+
+/* LAYOUT */
+.page{max-width:980px;margin:24px auto;padding:0 14px 60px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:26px}
+.card+.card{margin-top:18px}
+
+/* ALGO TABS */
+.sec{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--ltblue)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tab{padding:9px 18px;border:1.5px solid var(--border);border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .18s;background:#fff;color:var(--muted)}
+.tab:hover{border-color:var(--blue);color:var(--blue)}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab-rf.active{background:#1565C0;border-color:#1565C0}
+.tab-dt.active{background:#388E3C;border-color:#388E3C}
+.tab-xgb.active{background:#F57C00;border-color:#F57C00}
+.tab-gb.active{background:#7B1FA2;border-color:#7B1FA2}
+#model_choice{display:none}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* FORM GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+@media(max-width:620px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+select,input[type=number]{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.93rem;color:var(--text);background:#fff;width:100%;transition:border-color .2s,box-shadow .2s}
+select:focus,input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+
+/* BUTTON */
+.btn{width:100%;margin-top:20px;padding:15px;background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;font-size:1.05rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn:hover{opacity:.92;transform:translateY(-1px)}
+
+/* RESULT */
+.result-box{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:2px solid #81C784;border-radius:var(--r);padding:24px;text-align:center;margin-top:20px}
+.result-box .lbl{font-size:.8rem;color:#1B5E20;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.result-box .price{font-size:2.8rem;font-weight:800;color:#1B5E20;margin:6px 0 4px}
+.result-box .sub{font-size:.83rem;color:#388E3C}
+
+/* ALL PREDS */
+.preds-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.pcard{padding:14px 18px;border-radius:9px;border:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.pcard .mn{font-size:.81rem;font-weight:700;color:var(--muted)}
+.pcard .mp{font-size:1.14rem;font-weight:800;color:var(--blue)}
+.pcard.best{border-color:var(--blue);background:var(--ltblue)}
+.pcard.best .mn{color:var(--blue)}
+.ensemble-bar{background:var(--ltblue);border:1.5px solid #90CAF9;border-radius:9px;padding:12px 18px;margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+.ensemble-bar .el{font-size:.85rem;color:var(--blue);font-weight:700}
+.ensemble-bar .ep{font-size:1.35rem;font-weight:800;color:var(--blue)}
+
+/* PERFORMANCE TABLE */
+.perf-table{width:100%;border-collapse:collapse;font-size:.83rem;margin-top:12px}
+.perf-table th{background:#1A237E;color:#fff;font-weight:700;padding:9px 12px;text-align:center;font-size:.73rem;text-transform:uppercase;letter-spacing:.3px}
+.perf-table th:first-child{text-align:left}
+.perf-table td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:center}
+.perf-table td:first-child{text-align:left;font-weight:600}
+.perf-table tr:last-child td{border-bottom:none}
+.perf-table tr:hover td{background:#F5F8FF}
+.best-row td{background:#EBF5FF!important}
+.r2-badge{padding:2px 9px;border-radius:20px;font-weight:700;font-size:.79rem}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+@media(max-width:560px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.stat-card .val{font-size:1.5rem;font-weight:800;color:var(--navy)}
+.stat-card .key{font-size:.72rem;color:var(--muted);margin-top:3px;font-weight:600;text-transform:uppercase}
+.stat-card .val.green{color:#1B5E20}
+.stat-card .val.amber{color:#E65100}
+
+/* API BOX */
+.api-box{background:#0F172A;border-radius:var(--r);padding:18px 22px;margin-top:20px}
+.api-box h3{font-size:.76rem;color:#60A5FA;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.api-box pre{font-size:.74rem;color:#86EFAC;line-height:1.65;overflow-x:auto;white-space:pre-wrap}
+
+/* ERR */
+.err{margin-top:14px;background:#FFEBEE;border:1.5px solid #FFCDD2;border-radius:8px;padding:12px 16px;color:#C62828;font-size:.9rem}
+
+/* SECTION TITLE BAR */
+.section-label{background:var(--navy);color:#fff;border-radius:6px;padding:5px 14px;display:inline-block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ Airline Fare Predictor</h1>
+  <p>Adhithya — ML Project | Decision Tree · Random Forest · XGBoost · Gradient Boosting</p>
+  <div class="badges">
+    <span class="badge badge-green">🎯 Train R² = {{ "%.0f"|format(best_train_r2) }}%+</span>
+    <span class="badge badge-sky">📊 Test R² = {{ "%.0f"|format(best_test_r2) }}%+</span>
+    <span class="badge badge-sky">🌳 {{ metrics|length }} Algorithms</span>
+    <span class="badge badge-amber">📂 {{ "{:,}".format(dataset_size) }} Flights</span>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Algorithm selector -->
+  <div class="card">
+    <div class="sec">🤖 Select Algorithm</div>
+    <div class="tabs" id="tabRow">
+      <div class="tab tab-rf active" onclick="pick(this,'Random Forest')">🌲 Random Forest</div>
+      <div class="tab tab-dt"        onclick="pick(this,'Decision Tree')">🌿 Decision Tree</div>
+      <div class="tab tab-xgb"       onclick="pick(this,'XGBoost')">⚡ XGBoost</div>
+      <div class="tab tab-gb"        onclick="pick(this,'Gradient Boosting')">🚀 Gradient Boosting</div>
+    </div>
+  </div>
+
+  <!-- Prediction form -->
+  <div class="card" style="margin-top:16px">
+    <div class="sec">✈️ Flight Details</div>
+
+    <form method="POST" action="/predict">
+      <input type="hidden" name="model_choice" id="model_choice" value="Random Forest"/>
+
+      <!-- Route -->
+      <div class="g3">
+        <div class="field">
+          <label>Airline</label>
+          <select name="airline" required>
+            {% for a in airlines %}
+            <option value="{{ a }}" {% if form_data and form_data.airline==a %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Source</label>
+          <select name="source" required>
+            {% for s in sources %}
+            <option value="{{ s }}" {% if form_data and form_data.source==s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Destination</label>
+          <select name="destination" required>
+            {% for d in destinations %}
+            <option value="{{ d }}" {% if form_data and form_data.destination==d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <div class="sec">📅 Journey Date</div>
+
+      <div class="g3">
+        <div class="field">
+          <label>Day</label>
+          <input type="number" name="journey_day" min="1" max="31"
+                 value="{{ form_data.journey_day if form_data else 15 }}" required/>
+        </div>
+        <div class="field">
+          <label>Month</label>
+          <select name="journey_month">
+            {% set months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+            {% for i in range(1,13) %}
+            <option value="{{ i }}"
+              {% if form_data and form_data.journey_month|int==i %}selected
+              {% elif not form_data and i==5 %}selected{% endif %}>{{ months[i-1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Total Stops</label>
+          <select name="stops" required>
+            {% for st in stops %}
+            <option value="{{ st }}" {% if form_data and form_data.stops==st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <div class="sec">⏰ Departure & Arrival Time</div>
+
+      <div class="g4">
+        <div class="field">
+          <label>Dep Hour (0-23)</label>
+          <input type="number" name="dep_hour" min="0" max="23"
+                 value="{{ form_data.dep_hour if form_data else 9 }}" required/>
+        </div>
+        <div class="field">
+          <label>Dep Minute</label>
+          <input type="number" name="dep_min" min="0" max="59"
+                 value="{{ form_data.dep_min if form_data else 0 }}" required/>
+        </div>
+        <div class="field">
+          <label>Arr Hour (0-23)</label>
+          <input type="number" name="arr_hour" min="0" max="23"
+                 value="{{ form_data.arr_hour if form_data else 11 }}" required/>
+        </div>
+        <div class="field">
+          <label>Arr Minute</label>
+          <input type="number" name="arr_min" min="0" max="59"
+                 value="{{ form_data.arr_min if form_data else 30 }}" required/>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <div class="sec">🛫 Flight Duration</div>
+
+      <div class="g2">
+        <div class="field">
+          <label>Duration Hours</label>
+          <input type="number" name="dur_hours" min="0" max="30"
+                 value="{{ form_data.dur_hours if form_data else 2 }}" required/>
+        </div>
+        <div class="field">
+          <label>Duration Minutes</label>
+          <input type="number" name="dur_mins" min="0" max="59"
+                 value="{{ form_data.dur_mins if form_data else 30 }}" required/>
+        </div>
+      </div>
+
+      <button type="submit" class="btn">🔮 Predict Fare</button>
+    </form>
+
+    {% if error %}
+    <div class="err">⚠️ {{ error }}</div>
+    {% endif %}
+
+    {% if prediction %}
+    <div class="result-box">
+      <div class="lbl">Predicted Ticket Price — {{ chosen_model }}</div>
+      <div class="price">₹{{ "{:,.0f}".format(prediction) }}</div>
+      <div class="sub">Model: {{ chosen_model }} · Indian domestic flight fare estimate</div>
+    </div>
+
+    <div class="sec" style="margin-top:20px">📊 All 4 Model Predictions</div>
+    <div class="preds-grid">
+      {% for mname, mprice in all_preds.items() %}
+      <div class="pcard {% if mname==chosen_model %}best{% endif %}">
+        <div class="mn">{% if mname==chosen_model %}⭐ {% endif %}{{ mname }}</div>
+        <div class="mp">₹{{ "{:,.0f}".format(mprice) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="ensemble-bar">
+      <div class="el">🧮 Ensemble Average (all 4 models)</div>
+      <div class="ep">₹{{ "{:,.0f}".format(ensemble) }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Model Performance Summary -->
+    <div style="margin-top:24px">
+      <div class="sec">📈 Model Performance Summary</div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="val green">{{ "%.0f"|format(best_train_r2) }}%+</div>
+          <div class="key">Best Train R²</div>
+        </div>
+        <div class="stat-card">
+          <div class="val green">{{ "%.0f"|format(best_test_r2) }}%+</div>
+          <div class="key">Best Test R²</div>
+        </div>
+        <div class="stat-card">
+          <div class="val">{{ metrics|length }}</div>
+          <div class="key">Algorithms</div>
+        </div>
+        <div class="stat-card">
+          <div class="val amber">₹{{ "{:,}".format(metrics[best_model]['mae']|int) }}</div>
+          <div class="key">Best MAE</div>
+        </div>
+      </div>
+
+      <!-- Detailed metrics table -->
+      <table class="perf-table" style="margin-top:16px">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>R² Score</th>
+            <th>MAE (₹)</th>
+            <th>RMSE (₹)</th>
+            <th>MAPE (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set best_r2_val = namespace(val=0) %}
+          {% for name, m in metrics.items() %}
+          {% if m.r2 > best_r2_val.val %}{% set best_r2_val.val = m.r2 %}{% endif %}
+          {% endfor %}
+          {% for name, m in metrics.items() %}
+          <tr {% if m.r2 == best_r2_val.val %}class="best-row"{% endif %}>
+            <td>
+              {% if name=='Random Forest' %}🌲{% elif name=='Decision Tree' %}🌿{% elif name=='XGBoost' %}⚡{% else %}🚀{% endif %}
+              {{ name }}
+              {% if m.r2 == best_r2_val.val %} <span style="color:#1565C0;font-size:.72rem;font-weight:700;">★ BEST</span>{% endif %}
+            </td>
+            <td>
+              <span class="r2-badge" style="background:{% if m.r2>=83 %}#E8F5E9;color:#1B5E20{% elif m.r2>=80 %}#E3F2FD;color:#1565C0{% else %}#FFF3E0;color:#E65100{% endif %}">{{ "%.1f"|format(m.r2) }}%</span>
+            </td>
+            <td>₹{{ "{:,}".format(m.mae|int) }}</td>
+            <td>₹{{ "{:,}".format(m.rmse|int) }}</td>
+            <td>{{ "%.1f"|format(m.mape) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- REST API -->
+    <div class="api-box">
+      <h3>⚡ REST API — POST /api/predict</h3>
+      <pre>
+curl -X POST http://localhost:5000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "airline": "IndiGo",
+    "source": "Delhi",
+    "destination": "Cochin",
+    "stops": "1 stop",
+    "dep_hour": 9, "dep_min": 0,
+    "arr_hour": 13, "arr_min": 30,
+    "dur_hours": 4, "dur_mins": 30,
+    "journey_day": 15, "journey_month": 5
+  }'
+
+# Response:
+# {
+#   "predictions": {
+#     "Random Forest": 8450, "Decision Tree": 8920,
+#     "XGBoost": 8375, "Gradient Boosting": 8510
+#   },
+#   "ensemble_avg": 8564, "currency": "INR"
+# }</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+function pick(el, name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('model_choice').value = name;
+}
+// Restore active tab on page load after form submit
+(function(){
+  const chosen = "{{ form_data.model_choice if form_data else 'Random Forest' }}";
+  const map = {
+    'Random Forest':'tab-rf','Decision Tree':'tab-dt',
+    'XGBoost':'tab-xgb','Gradient Boosting':'tab-gb'
+  };
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const el = document.querySelector('.'+map[chosen]);
+  if(el) el.classList.add('active');
+})();
+</script>
+</body>
+</html>
