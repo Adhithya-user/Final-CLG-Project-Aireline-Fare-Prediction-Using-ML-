@@ -1,0 +1,77 @@
+{
+  "airline_enc": {
+    "Trujet": 0,
+    "SpiceJet": 1,
+    "Air Asia": 2,
+    "IndiGo": 3,
+    "GoAir": 4,
+    "Vistara": 5,
+    "Vistara Premium economy": 6,
+    "Air India": 7,
+    "Multiple carriers": 8,
+    "Multiple carriers Premium economy": 9,
+    "Jet Airways": 10,
+    "Jet Airways Business": 11
+  },
+  "dest_enc": {
+    "Kolkata": 0,
+    "Hyderabad": 1,
+    "Delhi": 2,
+    "Banglore": 3,
+    "Cochin": 4,
+    "New Delhi": 5
+  },
+  "source_cols": [
+    "Banglore",
+    "Kolkata",
+    "Delhi",
+    "Chennai",
+    "Mumbai"
+  ],
+  "feature_cols": [
+    "Airline",
+    "Destination",
+    "Total_Stops",
+    "Journey_day",
+    "Journey_month",
+    "Dep_Time_hour",
+    "Dep_Time_minute",
+    "Arrival_Time_hour",
+    "Arrival_Time_minute",
+    "Duration_hours",
+    "Duration_mins",
+    "Duration_hour",
+    "Duration_minute",
+    "Source_Banglore",
+    "Source_Kolkata",
+    "Source_Delhi",
+    "Source_Chennai",
+    "Source_Mumbai"
+  ],
+  "results": {
+    "RF": {
+      "r2": 0.8148160388981329,
+      "mae": 1250.8343477636436,
+      "rmse": 1930.9928424013897,
+      "mape": 13.963738290120014
+    },
+    "DT": {
+      "r2": 0.7906111660781385,
+      "mae": 1253.2054677463973,
+      "rmse": 2053.3157499801764,
+      "mape": 13.775932755578921
+    },
+    "GB": {
+      "r2": 0.8357281871802398,
+      "mae": 1230.1071473764098,
+      "rmse": 1818.6976438579857,
+      "mape": 14.013174286521899
+    },
+    "XGB": {
+      "r2": 0.8381489551194787,
+      "mae": 1175.7707659471453,
+      "rmse": 1805.2474200196627,
+      "mape": 13.179221579016993
+    }
+  }
+}
