@@ -28,7 +28,7 @@ flight_project/
 ├── requirements.txt                        ← Python dependencies
 ├── README.md
 ├── model/
-│   ├── random_forest_model.pkl             ← Random Forest (best model)
+│   ├── random_forest_model.pkl             ← Random Forest 
 │   ├── decision_tree_model.pkl             ← Decision Tree
 │   ├── xgboost_model.pkl                   ← XGBoost
 │   ├── gradient_boost_model.pkl            ← Gradient Boosting
@@ -46,7 +46,7 @@ flight_project/
 |-----------|----------|---------|---------|---------|
 | 🌲 **Random Forest** | **81.5%** | ₹1,251 | ₹1,931 | 14.0% |
 | 🌿 Decision Tree | 79.1% | ₹1,253 | ₹2,053 | 13.8% |
-| ⚡ XGBoost | 83.8% | ₹1,176 | ₹1,805 | 13.2% |
+****| ⚡ XGBoost | 83.8% | ₹1,176 | ₹1,805 | 13.2% |****
 | 🚀 Gradient Boosting | 83.6% | ₹1,230 | ₹1,819 | 14.0% |
 
 ---
